@@ -14,7 +14,7 @@ if errorlevel 1 (
   set PY=py -3.12
 )
 
-%PY% -m PyInstaller --noconsole --onefile --collect-data certifi --name System2Tool --icon icon.ico --add-data "fondo.jpg;." --add-data "eiffel.jpg;." --add-data "azul.jpg;." --add-data "icon.ico;." system2tool.py
+%PY% -m PyInstaller --noconsole --onefile --collect-data certifi --name System2Tool --icon icon.ico --add-data "fondo.jpg;." --add-data "eiffel.jpg;." --add-data "azul.jpg;." --add-data "ilimitado.jpg;." --add-data "icon.ico;." system2tool.py
 
 if exist dist\System2Tool.exe (
   copy /y dist\System2Tool.exe System2Tool.exe >nul

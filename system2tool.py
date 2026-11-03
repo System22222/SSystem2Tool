@@ -42,7 +42,7 @@ def load_settings():
             d = json.load(f)
         if d.get("lang") in ("es", "en"):
             SETTINGS["lang"] = d["lang"]
-        if d.get("theme") in ("red", "eiffel", "blue"):
+        if d.get("theme") in ("red", "eiffel", "blue", "unlimited"):
             SETTINGS["theme"] = d["theme"]
     except Exception:
         pass
@@ -70,6 +70,9 @@ THEMES = {
     "blue": dict(bg="azul.jpg", accent="#2e8bff", hover="#6db0ff", rgb=(46, 139, 255),
                  overlay=(0, 6, 30, 100), border="rgba(40,120,230,170)", cardhov="rgba(10,55,160,165)",
                  scroll="rgba(50,140,255,170)", tipbg="#040b1c"),
+    "unlimited": dict(bg="ilimitado.jpg", accent="#e8b64a", hover="#ffd884", rgb=(232, 182, 74),
+                      overlay=(20, 0, 8, 95), border="rgba(210,160,60,170)", cardhov="rgba(130,20,40,170)",
+                      scroll="rgba(232,182,74,170)", tipbg="#1a060b", card="rgba(10,6,8,95)", slogan=True),
 }
 
 
@@ -923,7 +926,7 @@ class Main(QWidget):
             QScrollBar:vertical{{background:rgba(0,0,0,80);width:8px;margin:0;}}
             QScrollBar::handle:vertical{{background:{th['scroll']};border-radius:4px;min-height:30px;}}
             QScrollBar::add-line:vertical,QScrollBar::sub-line:vertical{{height:0;}}
-            Card{{background:rgba(10,8,10,150);border:1px solid {th['border']};text-align:left;}}
+            Card{{background:{th.get('card','rgba(10,8,10,150)')};border:1px solid {th['border']};text-align:left;}}
             Card:hover{{background:{th['cardhov']};border:1px solid {ac};}}
             QLabel#ct{{color:white;font-weight:700;font-size:13px;background:transparent;}}
             QLabel#cd{{color:#e0e0e0;font-size:12px;background:transparent;}}
@@ -947,7 +950,8 @@ class Main(QWidget):
         m.addSection(tr("Tema", "Theme"))
         for code, label in (("red", tr("Rojo (clásico)", "Red (classic)")),
                             ("eiffel", tr("Torre Eiffel · Morado", "Eiffel Tower · Purple")),
-                            ("blue", tr("Laguna nocturna · Azul", "Night lagoon · Blue"))):
+                            ("blue", tr("Laguna nocturna · Azul", "Night lagoon · Blue")),
+                            ("unlimited", tr("Ilimitado", "Unlimited"))):
             a = m.addAction(("✔  " if SETTINGS["theme"] == code else "     ") + label)
             a.triggered.connect(lambda _, c=code: self.set_theme(c))
         m.exec(self.gear.mapToGlobal(self.gear.rect().bottomLeft()))
@@ -978,6 +982,18 @@ class Main(QWidget):
             s = self.bg.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             p.drawPixmap((self.width() - s.width()) // 2, (self.height() - s.height()) // 2, s)
         p.fillRect(self.rect(), QColor(*theme()['overlay']))
+        if theme().get("slogan"):
+            p.setRenderHint(QPainter.Antialiasing)
+            txt = tr("Todos los caminos llevan al Bypass", "All roads lead to the Bypass")
+            f = QFont("Segoe UI", max(18, self.width() // 24)); f.setBold(True)
+            p.setFont(f)
+            r = QRectF(self.width() * 0.08, 0, self.width() * 0.84, self.height())
+            flags = int(Qt.AlignCenter | Qt.TextWordWrap)
+            p.setPen(QColor(0, 0, 0, 200))
+            for dx, dy in ((3, 3), (-2, 2), (2, -2), (0, 4)):          # sombra
+                p.drawText(r.translated(dx, dy), flags, txt)
+            p.setPen(QColor(255, 226, 150, 235))
+            p.drawText(r, flags, txt)
 
     def run(self, t, cat):
         if self.busy:
